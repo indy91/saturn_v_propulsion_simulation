@@ -1,0 +1,8 @@
+*.dll
+*.exe
+*.ilk
+*.pdb
+bin/
+.vs/
+out/
+output/
