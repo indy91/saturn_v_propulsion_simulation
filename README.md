@@ -77,6 +77,8 @@ In addition to the propulsion and mass data, an .ini file is generated that can 
 | EVAR9 | sec | Time from S-IC retroignition to S-IC/S-II separation |
 | EVAR10 | sec | Time from S-IC/S-II separation to S-II ignition |
 | EVAR11 | sec | Time from S-IC/S-II separation to S-II ullage cutoff |
+| EVAR12 | sec | Time from S-IC/S-II separation to S-II inner engine cutoff |
+| EVAR13 | sec | Time from S-IC/S-II separation to S-II MRS |
 | EVAR17 | sec | Time from S-II cutoff to S-II/S-IVB separation |
 | EVAR18 | sec | Time from S-II ullage ignition to S-II/S-IVB separation |
 | EVAR20 | sec | Time from S-II retroignition to S-II/S-IVB |
@@ -86,6 +88,7 @@ In addition to the propulsion and mass data, an .ini file is generated that can 
 | EVAR33 | sec | Time from restart preparation to reignition |
 | EVAR34 | sec | Time from restart preparation to ullage cutoff |
 | EVAR35 | sec | Time from lead thrust initiation to S-IVB second 90-percent thrust |
+| EVAR43 | sec | Time from S-II/S-IVB separation to S-IVB ullage case jettison |
 | TBURN(1) | sec | Time from first motion to S-IC/S-II separation |
 | TBURN(2) | sec | Time from first motion to S-II/S-IVB separation |
 | VARIIN(4) | sec | Time from firstion motion to S-IC center engine cutoff |

@@ -166,6 +166,7 @@ SaturnPropulsionSimFrame::SaturnPropulsionSimFrame(const wxString& title)
 	CreateTextCtrl(panel, flexGridSizer, "S-II Sep Delay", "sec", "Time from S-II/S-IVB Separation Command to Separation", &inputs.t_SII_Sep_Delay);
 	CreateTextCtrl(panel, flexGridSizer, "S-IVB Engine Start", "sec", "Time from TB4 to S-IVB engine ignition (Switch Selector channel 11)", &inputs.t_SIVB_Engine_Ignition);
 	CreateTextCtrl(panel, flexGridSizer, "S-IVB 90% Thrust", "sec", "Time from S-IVB ignition to S-IVB engines at 90% thrust", &inputs.t_SIVB_90P_Thrust);
+	CreateTextCtrl(panel, flexGridSizer, "S-IVB Ullage Jettison", "sec", "Time from TB4 of S-IVB ullage casing jettison (S-IVB Switch Selector channel 57)", &inputs.t_SIVB_Ullage_Jettison);
 	column->Add(flexGridSizer);
 	gridSizer->Add(column);
 
@@ -279,6 +280,7 @@ void SaturnPropulsionSimFrame::OnOpen(wxCommandEvent& event)
 	config.Read("/Times/t_SII_Sep_Delay", &inputs.t_SII_Sep_Delay);
 	config.Read("/Times/t_SIVB_Engine_Ignition", &inputs.t_SIVB_Engine_Ignition);
 	config.Read("/Times/t_SIVB_90P_Thrust", &inputs.t_SIVB_90P_Thrust);
+	config.Read("/Times/t_SIVB_Ullage_Jettison", &inputs.t_SIVB_Ullage_Jettison);
 	config.Read("/Times/t_TLI_Fuel_Lead", &inputs.t_TLI_Fuel_Lead);
 	config.Read("/Times/t_TLI_APS_Ullage_Off", &inputs.t_TLI_APS_Ullage_Off);
 	config.Read("/Times/t_TLI_Reignition", &inputs.t_TLI_Reignition);
@@ -301,6 +303,8 @@ void SaturnPropulsionSimFrame::OnOpen(wxCommandEvent& event)
 		return;
 	}
 	SetStatusText("File loaded.");
+
+	inputs.FileNamePrefix = dlg.GetFilename();
 }
 
 void SaturnPropulsionSimFrame::OnSave(wxCommandEvent& event)
@@ -362,6 +366,7 @@ void SaturnPropulsionSimFrame::OnSave(wxCommandEvent& event)
 	config.Write("/Times/t_SII_Sep_Delay", inputs.t_SII_Sep_Delay);
 	config.Write("/Times/t_SIVB_Engine_Ignition", inputs.t_SIVB_Engine_Ignition);
 	config.Write("/Times/t_SIVB_90P_Thrust", inputs.t_SIVB_90P_Thrust);
+	config.Write("/Times/t_SIVB_Ullage_Jettison", inputs.t_SIVB_Ullage_Jettison);
 	config.Write("/Times/t_TLI_Fuel_Lead", inputs.t_TLI_Fuel_Lead);
 	config.Write("/Times/t_TLI_APS_Ullage_Off", inputs.t_TLI_APS_Ullage_Off);
 	config.Write("/Times/t_TLI_Reignition", inputs.t_TLI_Reignition);
@@ -379,6 +384,8 @@ void SaturnPropulsionSimFrame::OnSave(wxCommandEvent& event)
 
 	// Include file name in title
 	SetTitle(dlg.GetPath() + " - Saturn V Propulsion Simulation");
+
+	inputs.FileNamePrefix = dlg.GetFilename();
 }
 
 void SaturnPropulsionSimFrame::OnButtonCalculate(wxCommandEvent& event)

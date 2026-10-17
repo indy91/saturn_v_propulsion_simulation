@@ -157,6 +157,8 @@ struct SaturnVPropulsionSimulationInputs
 {
 	SaturnVPropulsionSimulationInputs();
 
+	std::string FileNamePrefix;
+
 	// MASSES
 	double SI_EmptyMass;					// S-IC empty mass, kg
 	double SII_EmptyMass;					// S-II empty mass, kg
@@ -211,8 +213,9 @@ struct SaturnVPropulsionSimulationInputs
 	double t_SIVB_Ullage;				// Time from TB4 to S-IVB ullage ignition
 	double t_SII_Sep_Cmd;				// Time from TB4 to S-II/S-IVB Sep and Retrorockets Cmd
 	double t_SII_Sep_Delay;				// Time from S-II/S-IVB Separation Command to Separation
-	double t_SIVB_Engine_Ignition;		// Time from TB4 to S-IVB engine ignition (Switch Selector channel 11)
+	double t_SIVB_Engine_Ignition;		// Time from TB4 to S-IVB engine ignition (S-IVB Switch Selector channel 11)
 	double t_SIVB_90P_Thrust;			// Time from S-IVB ignition to S-IVB engines at 90% thrust
+	double t_SIVB_Ullage_Jettison;		// Time from TB4 of S-IVB ullage casing jettison (S-IVB Switch Selector channel 57)
 
 	double t_TLI_Fuel_Lead;				// Time from TB6 to J-2 fuel lead
 	double t_TLI_APS_Ullage_Off;		// Time from TB6 when the APS ullage engines are turned off

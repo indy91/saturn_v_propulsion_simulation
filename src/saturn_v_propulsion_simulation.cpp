@@ -533,6 +533,8 @@ void SIVBSystems::SetMixtureRatio(double ratio)
 
 SaturnVPropulsionSimulationInputs::SaturnVPropulsionSimulationInputs()
 {
+	FileNamePrefix = "Default";
+
 	SI_EmptyMass = 133602.0;
 	SII_EmptyMass = 39869.0;
 	SIVB_EmptyMass = 13439.0;
@@ -554,7 +556,7 @@ SaturnVPropulsionSimulationInputs::SaturnVPropulsionSimulationInputs()
 	SIVBUllageCaseEmptyMass = 62.0;
 
 	LETMass = 4051.0;
-	S4PL_Mass = 45743.0;
+	S4PL_Mass = 44274.0; // 45743.0;
 
 	TotalJ2FuelLeadMass = 134446.75;
 
@@ -589,6 +591,7 @@ SaturnVPropulsionSimulationInputs::SaturnVPropulsionSimulationInputs()
 	t_SII_Sep_Delay = 0.075;
 	t_SIVB_Engine_Ignition = 4.0;
 	t_SIVB_90P_Thrust = 2.5;
+	t_SIVB_Ullage_Jettison = 12.8;
 
 	t_TLI_Fuel_Lead = 570.0;
 	t_TLI_APS_Ullage_Off = 573.0;
@@ -850,7 +853,7 @@ void SaturnVPropulsionSimulation::CreateSystems()
 
 	// Initial jettisonable masses
 	SIIInterstageMass = inp.SIIInterstageMass;
-	SIVBUllageCaseEmptyMass = inp.SIVBUllageCaseEmptyMass;
+	SIVBUllageCaseEmptyMass = inp.SIVBUllageCaseEmptyMass * (double)inp.SIVB_UllageNum;
 	LETMass = inp.LETMass;
 
 	// Propellants
@@ -1182,10 +1185,17 @@ void SaturnVPropulsionSimulation::EventSequence(int event, double& TI)
 		StorePropulsionData();
 		SetPropDataPrintInterval(false);
 
+		// Next event, S-IVB ullage casing jettison
+		TI = TB4 + inp.t_SIVB_Ullage_Jettison;
+		break;
+	case 23: // S-IVB ullage casing jettison
+		StoreMassData();
+		SIVBUllageCaseEmptyMass = 0.0;
+
 		// Next event, end of data
 		TI = T + 200.0;
 		break;
-	case 23: // End of launch data
+	case 24: // End of launch data
 
 		// Set up for TLI sim
 		EventCounter = 99;
@@ -1454,7 +1464,7 @@ void SaturnVPropulsionSimulation::WritePropellantTape()
 {
 	std::ofstream myfile;
 
-	myfile.open("../output/PropulsionTape.txt");
+	myfile.open("../output/" + inp.FileNamePrefix + " Propulsion Tape.txt");
 
 	if (myfile.is_open() == false) return;
 
@@ -1518,7 +1528,7 @@ void SaturnVPropulsionSimulation::WriteMassDataCards()
 {
 	std::ofstream myfile;
 
-	myfile.open("../output/MassDataCards.txt");
+	myfile.open("../output/" + inp.FileNamePrefix + " Mass Data Cards.txt");
 
 	if (myfile.is_open() == false) return;
 
@@ -1574,14 +1584,14 @@ void SaturnVPropulsionSimulation::WriteMassDataCards()
 
 void SaturnVPropulsionSimulation::WriteLVSPInputs()
 {
-	double dt_SII_Engines_Start_to_Ignition, dt_SII_Ullage, dt_SIVB_Ullage, t_SIC_CECO, t_TB3_Sep, t_TB3_90P, t_TB4_Sep, t_TB4_90P, t_TB3_LET_Jett;
-	double EVAR31, EVAR33, EVAR34, EVAR35;
+	double dt_SII_Engines_Start_to_Ignition, dt_SII_Ullage, dt_SIVB_Ullage, t_SIC_CECO, t_TB3_Sep, t_TB3_90P, t_TB4_Sep, t_TB4_90P, t_TB3_LET_Jett, T2I, TCI;
+	double EVAR31, EVAR33, EVAR34, EVAR35, EVAR43;
 
 	dt_SII_Engines_Start_to_Ignition = 1.0;
 
 	// Calculate ullage burn times
-	dt_SII_Ullage = inp.SIIUllageRocketPropellantMass / (inp.F_SII_Ullage / inp.ISP_SII_Ullage);
-	dt_SIVB_Ullage = inp.SIVBUllageRocketPropellantMass / (inp.F_SIVB_Ullage / inp.ISP_SIVB_Ullage);
+	dt_SII_Ullage = 4.5; //  inp.SIIUllageRocketPropellantMass / (inp.F_SII_Ullage / inp.ISP_SII_Ullage);
+	dt_SIVB_Ullage = 7.8; // inp.SIVBUllageRocketPropellantMass / (inp.F_SIVB_Ullage / inp.ISP_SIVB_Ullage);
 
 	t_SIC_CECO = inp.t_SIC_CECO + inp.t_Liftoff;
 	t_TB3_Sep = inp.t_SIC_Sep_Cmd + inp.t_SIC_Sep_Delay;				// Time in TB3 of stage separation
@@ -1589,13 +1599,18 @@ void SaturnVPropulsionSimulation::WriteLVSPInputs()
 	t_TB4_Sep = inp.t_SII_Sep_Cmd + inp.t_SII_Sep_Delay;				// Time in TB4 of stage separation
 	t_TB4_90P = inp.t_SIVB_Engine_Ignition + inp.t_SIVB_90P_Thrust;		// Time in TB4 of S-IVB 90% thrust
 	t_TB3_LET_Jett = inp.t_SII_InterstageJettison + inp.t_LET_Jettison;	// Time in TB3 of LET jettison
+	T2I = TB4 - (TB3 + inp.t_IGM + inp.t_SII_MRS);						// Time remaining in second stage of IGM guidance
+	TCI = inp.t_SIVB_Engine_Ignition + inp.t_SIVB_90P_Thrust;			// Guidance coast time between S-II cutoff and initiation of third stage of IGM guidance
 
 	EVAR31 = inp.t_TLI_Fuel_Lead;
 	EVAR33 = inp.t_TLI_Reignition;
 	EVAR34 = inp.t_TLI_APS_Ullage_Off;
 	EVAR35 = (inp.t_TLI_Reignition - inp.t_TLI_Fuel_Lead) + inp.t_SIVB_90P_Thrust;
+	EVAR43 = TB4 + inp.t_SIVB_Ullage_Jettison;
 
-	wxFileConfig config("Saturn V Propulsion", wxEmptyString, "../output/LVSPInputs.ini", wxEmptyString, wxCONFIG_USE_LOCAL_FILE | wxCONFIG_USE_RELATIVE_PATH);
+	wxString FileName = inp.FileNamePrefix + " LVSP Inputs.ini";
+
+	wxFileConfig config("Saturn V Propulsion", wxEmptyString, "../output/" + FileName, wxEmptyString, wxCONFIG_USE_LOCAL_FILE | wxCONFIG_USE_RELATIVE_PATH);
 
 	config.Write("/Basic/DELTSK(2)", inp.t_SII_InterstageJettison - t_TB3_Sep);
 	config.Write("/Basic/DTCOST(1)", 0.0);
@@ -1608,6 +1623,8 @@ void SaturnVPropulsionSimulation::WriteLVSPInputs()
 	config.Write("/Basic/EVAR9", inp.t_SIC_Sep_Delay);
 	config.Write("/Basic/EVAR10", inp.t_SII_Engine_Start + dt_SII_Engines_Start_to_Ignition - t_TB3_Sep);
 	config.Write("/Basic/EVAR11", inp.t_SII_Ullage + dt_SII_Ullage - t_TB3_Sep);
+	config.Write("/Basic/EVAR12", inp.bDoSII_CECO ? (inp.t_SII_CECO - t_TB3_Sep) : -1.0);
+	config.Write("/Basic/EVAR13", inp.t_IGM + inp.t_SII_MRS - t_TB3_Sep);
 	config.Write("/Basic/EVAR17", t_TB4_Sep);
 	config.Write("/Basic/EVAR18", t_TB4_Sep - inp.t_SIVB_Ullage);
 	config.Write("/Basic/EVAR20", inp.t_SII_Sep_Delay);
@@ -1617,7 +1634,13 @@ void SaturnVPropulsionSimulation::WriteLVSPInputs()
 	config.Write("/Basic/EVAR33", EVAR33);
 	config.Write("/Basic/EVAR34", EVAR34);
 	config.Write("/Basic/EVAR35", EVAR35);
+	config.Write("/Basic/EVAR43", EVAR43);
 	config.Write("/Basic/TBURNI(1)", TB3 + t_TB3_Sep);
 	config.Write("/Basic/TBURNI(2)", TB4 + t_TB4_Sep);
+	config.Write("/Presettings/TCHECK(1)", inp.t_SII_MRS);
+	config.Write("/Presettings/TCHECK(2)", T2I);
+	config.Write("/Presettings/TCHECK(4)", TCI);
+	config.Write("/Presettings/TCHECK(5)", inp.t_TLI_MRS_1st);
+	config.Write("/Presettings/TCHECK(9)", inp.t_TLI_MRS_2nd);
 	config.Write("/MotorData/VARIIN(4)", t_SIC_CECO);
 }
