@@ -227,6 +227,15 @@ void SaturnPropulsionSimFrame::CreateTextCtrl(wxPanel* panel, wxFlexGridSizer* f
 	flexGridSizer->Add(new wxStaticText(panel, wxID_ANY, unit), wxSizerFlags().CenterVertical().Border());
 }
 
+wxString GetFileNameOnly(const wxFileDialog& dlg)
+{
+	// Get file name without extension
+
+	wxString fullPath = dlg.GetPath();
+	wxFileName file(fullPath);
+	return file.GetName();
+}
+
 void SaturnPropulsionSimFrame::OnOpen(wxCommandEvent& event)
 {
 	wxFileName fn(wxGetCwd());
@@ -304,7 +313,7 @@ void SaturnPropulsionSimFrame::OnOpen(wxCommandEvent& event)
 	}
 	SetStatusText("File loaded.");
 
-	inputs.FileNamePrefix = dlg.GetFilename();
+	inputs.FileNamePrefix = GetFileNameOnly(dlg);
 }
 
 void SaturnPropulsionSimFrame::OnSave(wxCommandEvent& event)
@@ -385,7 +394,7 @@ void SaturnPropulsionSimFrame::OnSave(wxCommandEvent& event)
 	// Include file name in title
 	SetTitle(dlg.GetPath() + " - Saturn V Propulsion Simulation");
 
-	inputs.FileNamePrefix = dlg.GetFilename();
+	inputs.FileNamePrefix = GetFileNameOnly(dlg);
 }
 
 void SaturnPropulsionSimFrame::OnButtonCalculate(wxCommandEvent& event)
